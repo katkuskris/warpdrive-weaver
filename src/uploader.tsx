@@ -1,6 +1,10 @@
 import { useRef, useState } from "react";
 
-function Uploader() {
+interface UploaderProps {
+  onOutputChange?: (output: string | null) => void;
+}
+
+function Uploader({ onOutputChange }: UploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [output, setOutput] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +24,7 @@ function Uploader() {
     if (!file.name.toLowerCase().endsWith(".wif")) {
       setError("Please upload a .wif file.");
       setOutput(null); // Clear previous output on error
+      onOutputChange?.(null); // Clear output in parent
       event.target.value = "";
       return;
     }
@@ -40,16 +45,20 @@ function Uploader() {
             const errorMessage = errorData.message || errorData.error || `Server error: ${response.status}`;
             setError(errorMessage);
             setOutput(null); // Clear previous output on error
+            onOutputChange?.(null); // Clear output in parent
           } catch {
             // If response isn't JSON, use status text or generic message
             setError(`Server error: ${response.status} ${response.statusText || 'Unknown error'}`);
             setOutput(null); // Clear previous output on error
+            onOutputChange?.(null); // Clear output in parent
           }
           return;
         }
         const data = await response.json();
-        setOutput(JSON.stringify(data, null, 2)); // Only clear error on success
+        const jsonOutput = JSON.stringify(data, null, 2);
+        setOutput(jsonOutput); // Only clear error on success
         setError(null);
+        onOutputChange?.(jsonOutput); // Pass output back to parent
       } catch (error) {
         // Handle network errors or other exceptions
         if (error instanceof Error) {
@@ -58,11 +67,13 @@ function Uploader() {
           setError("Failed to parse file.");
         }
         setOutput(null); // Clear previous output on error
+        onOutputChange?.(null); // Clear output in parent
       }
     };
     reader.onerror = () => {
       setError("Failed to read file.");
       setOutput(null); // Clear previous output on error
+      onOutputChange?.(null); // Clear output in parent
     };
     reader.readAsText(file);
     // Reset input so the same file can be uploaded again if needed
