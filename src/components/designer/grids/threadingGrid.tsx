@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import type { WifState } from '../../../types/wifData';
+import { useGridSettings } from '../../../contexts/GridSettingsContext';
 
 interface ThreadingGridProps {
   wifState: WifState;
@@ -8,14 +9,11 @@ interface ThreadingGridProps {
 
 function ThreadingGrid({ wifState, onThreadingUpdate }: ThreadingGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { cellSize } = useGridSettings();
   
   const shafts = wifState.sections.weaving?.shafts || 4;
-  // Determine number of threads from the threading data itself
-  const threadingData = wifState.sections.threading || {};
-  const threadNumbers = Object.keys(threadingData).map(k => parseInt(k));
-  const threads = threadNumbers.length > 0 ? Math.max(...threadNumbers) : (wifState.sections.warp?.threads || 20);
-
-  const CELL_SIZE = 15;
+  // Use warp thread count from WIF state, not from threading data
+  const threads = wifState.sections.warp?.threads || 20;
   
   const drawGrid = () => {
     const canvas = canvasRef.current;
@@ -31,8 +29,8 @@ function ThreadingGrid({ wifState, onThreadingUpdate }: ThreadingGridProps) {
     
     for (let shaft = 0; shaft < shafts; shaft++) {
       for (let visualCol = 0; visualCol < threads; visualCol++) {
-        const x = visualCol * CELL_SIZE;
-        const y = shaft * CELL_SIZE;
+        const x = visualCol * cellSize;
+        const y = shaft * cellSize;
         
         // Convert visual position back to WIF coordinates to check if filled
         // visualCol 0 = leftmost, threads-1 = rightmost
@@ -47,12 +45,12 @@ function ThreadingGrid({ wifState, onThreadingUpdate }: ThreadingGridProps) {
         
         if (shouldFill) {
           ctx.fillStyle = '#007bff';
-          ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect(x, y, cellSize, cellSize);
         }
         
         ctx.strokeStyle = '#ccc';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+        ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
   };
@@ -66,8 +64,8 @@ function ThreadingGrid({ wifState, onThreadingUpdate }: ThreadingGridProps) {
     const y = event.clientY - rect.top;
     
     // Convert click position to visual coordinates
-    const visualCol = Math.floor(x / CELL_SIZE); // 0 = leftmost, threads-1 = rightmost
-    const displayRow = Math.floor(y / CELL_SIZE); // 0 = top, shafts-1 = bottom
+    const visualCol = Math.floor(x / cellSize); // 0 = leftmost, threads-1 = rightmost
+    const displayRow = Math.floor(y / cellSize); // 0 = top, shafts-1 = bottom
     
     if (visualCol >= 0 && visualCol < threads && displayRow >= 0 && displayRow < shafts) {
       // Convert visual coordinates to WIF coordinates
@@ -88,14 +86,14 @@ function ThreadingGrid({ wifState, onThreadingUpdate }: ThreadingGridProps) {
   
   useEffect(() => {
     drawGrid();
-  }, [wifState.sections.threading, shafts, threads]);
+  }, [wifState.sections.threading, shafts, threads, cellSize]);
 
   return (
     <div>
       <canvas
         ref={canvasRef}
-        width={threads * CELL_SIZE}
-        height={shafts * CELL_SIZE}
+        width={threads * cellSize}
+        height={shafts * cellSize}
         onClick={handleCanvasClick}
         style={{ 
           border: '1px solid #ccc', 

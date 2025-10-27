@@ -4,6 +4,7 @@ import Uploader from "./uploader";
 import Designer from "./components/designer/designer";
 import { WifObjectFactory } from "./utils/wifObjectFactory";
 import type { WifState } from "./types/wifData";
+import { GridSettingsProvider } from "./contexts/GridSettingsContext";
 
 function App() {
   const [wifState, setWifState] = useState<WifState | null>(null);
@@ -28,19 +29,21 @@ function App() {
   };
 
   return (
-    <div className="root">
-      <Uploader 
-        onOutputChange={handleOutputChange}
-      />
-      
-      {error && (
-        <div style={{ color: 'red', marginTop: '1em' }}>
-          Error: {error}
-        </div>
-      )}
-      
-      {wifState && <Designer wifState={wifState} />}
-    </div>
+    <GridSettingsProvider>
+      <div className="root">
+        <Uploader 
+          onOutputChange={handleOutputChange}
+        />
+        
+        {error && (
+          <div style={{ color: 'red', marginTop: '1em' }}>
+            Error: {error}
+          </div>
+        )}
+        
+        {wifState && <Designer wifState={wifState} />}
+      </div>
+    </GridSettingsProvider>
   );
 }
 

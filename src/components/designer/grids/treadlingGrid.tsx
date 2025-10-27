@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import type { WifState } from '../../../types/wifData';
+import { useGridSettings } from '../../../contexts/GridSettingsContext';
 
 interface TreadlingGridProps {
   wifState: WifState;
@@ -8,14 +9,12 @@ interface TreadlingGridProps {
 
 function TreadlingGrid({ wifState, onTreadlingUpdate }: TreadlingGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const CELL_SIZE = 15;
+  const { cellSize } = useGridSettings();
 
   const treadles = wifState.sections.weaving?.treadles || 4;
   
-  // Determine weft threads from treadling data (not threading data)
-  const treadlingData = wifState.sections.treadling || {};
-  const weftNumbers = Object.keys(treadlingData).map(k => parseInt(k));
-  const threads = weftNumbers.length > 0 ? Math.max(...weftNumbers) : (wifState.sections.weft?.threads || 20);
+  // Use weft thread count from WIF state, not from treadling data
+  const threads = wifState.sections.weft?.threads || 20;
   
   const drawGrid = () => {
     const canvas = canvasRef.current;
@@ -38,8 +37,8 @@ function TreadlingGrid({ wifState, onTreadlingUpdate }: TreadlingGridProps) {
     
     for (let thread = 0; thread < threads; thread++) {
       for (let treadle = 0; treadle < treadles; treadle++) {
-        const x = treadle * CELL_SIZE;
-        const y = thread * CELL_SIZE;
+        const x = treadle * cellSize;
+        const y = thread * cellSize;
         
         const weftThreadNumber = thread + 1;
         const treadleNumber = treadle + 1;
@@ -53,12 +52,12 @@ function TreadlingGrid({ wifState, onTreadlingUpdate }: TreadlingGridProps) {
         
         if (shouldFill) {
           ctx.fillStyle = '#007bff';
-          ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect(x, y, cellSize, cellSize);
         }
         
         ctx.strokeStyle = '#ccc';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+        ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
   };
@@ -71,8 +70,8 @@ function TreadlingGrid({ wifState, onTreadlingUpdate }: TreadlingGridProps) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    const treadleIndex = Math.floor(x / CELL_SIZE);
-    const threadIndex = Math.floor(y / CELL_SIZE);
+    const treadleIndex = Math.floor(x / cellSize);
+    const threadIndex = Math.floor(y / cellSize);
 
     if (treadleIndex >= 0 && treadleIndex < treadles && threadIndex >= 0 && threadIndex < threads) {
       const weftThreadNumber = threadIndex + 1;
@@ -104,7 +103,7 @@ function TreadlingGrid({ wifState, onTreadlingUpdate }: TreadlingGridProps) {
       timestamp: new Date().toISOString()
     });
     drawGrid();
-  }, [wifState.sections.treadling, threads, treadles]);
+  }, [wifState.sections.treadling, threads, treadles, cellSize]);
 
   // Add another useEffect to watch the entire wifState for debugging
   useEffect(() => {
@@ -114,8 +113,8 @@ function TreadlingGrid({ wifState, onTreadlingUpdate }: TreadlingGridProps) {
   return (
     <canvas
       ref={canvasRef}
-      width={treadles * CELL_SIZE}
-      height={threads * CELL_SIZE}
+      width={treadles * cellSize}
+      height={threads * cellSize}
       onClick={handleCanvasClick}
       style={{ 
         border: '1px solid #ccc', 

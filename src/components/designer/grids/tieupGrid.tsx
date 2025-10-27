@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import type { WifState } from '../../../types/wifData';
+import { useGridSettings } from '../../../contexts/GridSettingsContext';
 
 interface TieupGridProps {
   wifState: WifState;
@@ -8,10 +9,10 @@ interface TieupGridProps {
 
 function TieupGrid({ wifState, onTieupUpdate }: TieupGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { cellSize } = useGridSettings();
   
   const shafts = wifState.sections.weaving?.shafts || 4;
   const treadles = wifState.sections.weaving?.treadles || 4;
-  const CELL_SIZE = 15;
 
 
   
@@ -29,8 +30,8 @@ function TieupGrid({ wifState, onTieupUpdate }: TieupGridProps) {
     
     for (let shaft = 0; shaft < shafts; shaft++) {
       for (let treadle = 0; treadle < treadles; treadle++) {
-        const x = treadle * CELL_SIZE;
-        const y = shaft * CELL_SIZE;
+        const x = treadle * cellSize;
+        const y = shaft * cellSize;
         
         // Convert visual position to WIF coordinates
         const wifTreadleNumber = treadle + 1; // Display column 0 = treadle 1
@@ -42,12 +43,12 @@ function TieupGrid({ wifState, onTieupUpdate }: TieupGridProps) {
         
         if (shouldFill) {
           ctx.fillStyle = '#007bff';
-          ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect(x, y, cellSize, cellSize);
         }
         
         ctx.strokeStyle = '#ccc';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+        ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
   };
@@ -60,8 +61,8 @@ function TieupGrid({ wifState, onTieupUpdate }: TieupGridProps) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     
-    const treadle = Math.floor(x / CELL_SIZE);
-    const shaft = Math.floor(y / CELL_SIZE);
+    const treadle = Math.floor(x / cellSize);
+    const shaft = Math.floor(y / cellSize);
 
     if (treadle >= 0 && treadle < treadles && shaft >= 0 && shaft < shafts) {
       // Convert visual coordinates to WIF coordinates
@@ -83,14 +84,14 @@ function TieupGrid({ wifState, onTieupUpdate }: TieupGridProps) {
   
   useEffect(() => {
     drawGrid();
-  }, [wifState.sections.tieup, shafts, treadles]);
+  }, [wifState.sections.tieup, shafts, treadles, cellSize]);
 
   return (
     <div>
       <canvas
         ref={canvasRef}
-        width={treadles * CELL_SIZE}
-        height={shafts * CELL_SIZE}
+        width={treadles * cellSize}
+        height={shafts * cellSize}
         onClick={handleCanvasClick}
         style={{ 
           border: '1px solid #ccc', 

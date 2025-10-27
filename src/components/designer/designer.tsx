@@ -4,6 +4,7 @@ import ThreadingGrid from './grids/threadingGrid';
 import TreadlingGrid from './grids/treadlingGrid';
 import DrawdownGrid from './grids/drawdownGrid';
 import TieupGrid from './grids/tieupGrid';
+import GridSettings from './GridSettings';
 import type { WifState } from '../../types/wifData';
 
 
@@ -124,6 +125,7 @@ function Designer({ wifState: initialWifState }: DesignerProps) {
     return (
         <div>
             <h2>Weaving Designer</h2>
+            <GridSettings />
             <div className="weaving-draft-layout">
                 {/* Top Row */}
                 <div className="top-row">

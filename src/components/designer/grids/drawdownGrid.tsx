@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import type { WifState } from '../../../types/wifData';
+import { useGridSettings } from '../../../contexts/GridSettingsContext';
 
 interface DrawdownGridProps {
   wifState: WifState;
@@ -7,15 +8,12 @@ interface DrawdownGridProps {
 
 function DrawdownGrid({ wifState }: DrawdownGridProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { cellSize } = useGridSettings();
 
   const weftThreads = wifState.sections.weft?.threads || 20;
   
-  // Determine number of warp threads from the threading data itself (matching threadingGrid.tsx)
-  const threadingData = wifState.sections.threading || {};
-  const threadNumbers = Object.keys(threadingData).map(k => parseInt(k));
-  const warpThreads = threadNumbers.length > 0 ? Math.max(...threadNumbers) : (wifState.sections.warp?.threads || 20);
-  
-  const CELL_SIZE = 15;
+  // Use warp thread count from WIF state, not from threading data
+  const warpThreads = wifState.sections.warp?.threads || 20;
 
 
   
@@ -35,8 +33,8 @@ function DrawdownGrid({ wifState }: DrawdownGridProps) {
     
     for (let weftThread = 0; weftThread < weftThreads; weftThread++) {
       for (let visualCol = 0; visualCol < warpThreads; visualCol++) {
-        const x = visualCol * CELL_SIZE;
-        const y = weftThread * CELL_SIZE;
+        const x = visualCol * cellSize;
+        const y = weftThread * cellSize;
         
         // Calculate if this cell should be filled based on weaving logic
         const weftShot = weftThread + 1; // Convert 0-indexed to 1-indexed
@@ -56,12 +54,12 @@ function DrawdownGrid({ wifState }: DrawdownGridProps) {
         
         if (shouldFill) {
           ctx.fillStyle = '#007bff';
-          ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+          ctx.fillRect(x, y, cellSize, cellSize);
         }
         
         ctx.strokeStyle = '#ccc';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+        ctx.strokeRect(x, y, cellSize, cellSize);
       }
     }
   };
@@ -69,14 +67,14 @@ function DrawdownGrid({ wifState }: DrawdownGridProps) {
   
   useEffect(() => {
     drawGrid();
-  }, [wifState.sections.threading, wifState.sections.tieup, wifState.sections.treadling, weftThreads, warpThreads]);
+  }, [wifState.sections.threading, wifState.sections.tieup, wifState.sections.treadling, weftThreads, warpThreads, cellSize]);
 
   return (
     <div>
       <canvas
         ref={canvasRef}
-        width={warpThreads * CELL_SIZE}
-        height={weftThreads * CELL_SIZE}
+        width={warpThreads * cellSize}
+        height={weftThreads * cellSize}
         style={{ 
           border: '1px solid #ccc',
         }}
