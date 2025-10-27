@@ -1,4 +1,4 @@
-import { WifData } from './types/wif';
+import type { WifState } from '../types/wifData';
 
 /**
  * Factory function for creating WIF objects from parsed JSON data
@@ -9,22 +9,16 @@ export class WifObjectFactory {
      * @param jsonData - The parsed JSON data from the WIF file
      * @returns A structured WIF object
      */
-    static createFromJson(jsonData: any): WifData {
+    static createFromJson(jsonData: any): WifState {
         try {
-            // Validate the input data
-            if (!jsonData || typeof jsonData !== 'object') {
-                throw new Error('Invalid JSON data provided');
+            // Validate the input data first
+            if (!this.validate(jsonData)) {
+                throw new Error('Invalid WIF JSON structure - validation failed');
             }
 
-            // Extract and validate required fields
-            const wifObject: WifData = {
-                // TODO: Map JSON properties to WIF object structure
-                // Example structure:
-                // id: jsonData.id || generateId(),
-                // name: jsonData.name || 'Unnamed WIF',
-                // version: jsonData.version || '1.0',
-                // metadata: jsonData.metadata || {},
-                // data: jsonData.data || {}
+            // Now we know jsonData.sections exists and is valid
+            const wifObject: WifState = {
+                sections: jsonData.sections
             };
 
             return wifObject;
@@ -37,9 +31,30 @@ export class WifObjectFactory {
      * Creates a default/empty WIF object
      * @returns A default WIF object structure
      */
-    static createDefault(): WifData {
+    static createDefault(): WifState {
         return {
-            // TODO: Define default WIF object structure
+            sections: {
+                wif: {
+                    version: 1.1,
+                    date: new Date().toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    }),
+                    developers: "warpdrive-weaver",
+                    sourceProgram: "WarpDrive Weaver",
+                },
+                contents: {
+                    wif: true,
+                    weaving: false,
+                    warp: false,
+                    weft: false,
+                    threading: false,
+                    tieup: false,
+                    treadling: false
+                }
+            }
         };
     }
 
@@ -50,15 +65,19 @@ export class WifObjectFactory {
      */
     static validate(jsonData: any): boolean {
         try {
-            // TODO: Implement validation logic
-            if (!jsonData || typeof jsonData !== 'object') {
+            // Quick structural checks
+            if (!jsonData?.sections || typeof jsonData.sections !== 'object') {
+                return false;
+        
+            }
+
+            // Must have wif section with version
+            if (!jsonData.sections.wif?.version || typeof jsonData.sections.wif.version !== 'number') {
                 return false;
             }
 
-            // Add specific validation rules here
-            // Example:
-            // return 'id' in jsonData && 'name' in jsonData;
-            
+            // If it has basic structure, assume it's valid
+            // Let createFromJson handle detailed validation
             return true;
         } catch {
             return false;
@@ -70,28 +89,11 @@ export class WifObjectFactory {
      * @param wifObject - The WIF object to serialize
      * @returns JSON representation
      */
-    static toJson(wifObject: WifData): string {
+    static toJson(wifObject: WifState): string {
         try {
             return JSON.stringify(wifObject, null, 2);
         } catch (error) {
             throw new Error(`Failed to serialize WIF object: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
-}
-
-/**
- * Convenience function for creating WIF objects
- * @param jsonData - The JSON data to create from
- * @returns A new WIF object
- */
-export function createWifObject(jsonData: any): WifData {
-    return WifObjectFactory.createFromJson(jsonData);
-}
-
-/**
- * Helper function to generate unique IDs
- * @returns A unique identifier string
- */
-function generateId(): string {
-    return `wif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }

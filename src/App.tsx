@@ -1,12 +1,30 @@
 import { useState } from "react";
 import "./App.css";
 import Uploader from "./uploader";
+import Designer from "./components/designer/designer";
+import { WifObjectFactory } from "./utils/wifObjectFactory";
+import type { WifState } from "./types/wifData";
 
 function App() {
-  const [output, setOutput] = useState<string | null>(null);
+  const [wifState, setWifState] = useState<WifState | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleOutputChange = (newOutput: string | null) => {
-    setOutput(newOutput);
+  const handleOutputChange = (jsonOutput: string | null) => {
+    if (!jsonOutput) {
+      setWifState(null);
+      setError(null);
+      return;
+    }
+
+    try {
+      const jsonData = JSON.parse(jsonOutput);
+      const wifObject = WifObjectFactory.createFromJson(jsonData);
+      setWifState(wifObject);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse WIF data');
+      setWifState(null);
+    }
   };
 
   return (
@@ -14,15 +32,14 @@ function App() {
       <Uploader 
         onOutputChange={handleOutputChange}
       />
-      {output && (<Canvas />}
-      {output && (
-        <div style={{ marginTop: "1em" }}>
-          <h3>Parsed WIF Data:</h3>
-          <pre style={{ background: "#f5f5f5", padding: "1em", borderRadius: "4px" }}>
-            {output}
-          </pre>
+      
+      {error && (
+        <div style={{ color: 'red', marginTop: '1em' }}>
+          Error: {error}
         </div>
       )}
+      
+      {wifState && <Designer wifState={wifState} />}
     </div>
   );
 }

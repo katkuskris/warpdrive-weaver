@@ -3,10 +3,14 @@ type WifFieldType = string | number | boolean | number[] | string[] | boolean[];
 
 // Known WIF sections with their specific field structures
 interface KnownWifSections {
-  contents?: Record<string, WifFieldType>;
+  contents: Record<string, WifFieldType>;
   
-  wif?: Record<string, WifFieldType> & {
-    version?: number;
+  wif: Record<string, WifFieldType> & {
+    version: number;
+    date: string;
+    developers: string;
+    sourceProgram: string;
+    sourceVersion?: string;
   };
   
   weaving?: Record<string, WifFieldType> & {
@@ -49,21 +53,21 @@ type WifState = {
 // // Schema-related types for your factory
 // type WifFieldType = 'string' | 'number' | 'float' | 'boolean' | 'numberArray' | 'stringArray';
 
-interface WifSectionSchema {
-  fields?: Record<string, WifFieldType>;
-  defaultValueType?: WifFieldType;
-}
+// interface WifSectionSchema {
+//   fields?: Record<string, WifFieldType>;
+//   defaultValueType?: WifFieldType;
+// }
 
-interface WifSchema {
-  [sectionName: string]: WifSectionSchema;
-}
+// interface WifSchema {
+//   [sectionName: string]: WifSectionSchema;
+// }
 
 // Export all types
 export type { 
   WifState, 
   WifSections, 
   KnownWifSections,
-  WifSchema, 
-  WifSectionSchema, 
+//   WifSchema, 
+//   WifSectionSchema, 
   WifFieldType 
 };

@@ -17,5 +17,5 @@ export default function Canvas({
 
     
 
-    return <canvas ref={canvasRef} className={className} aria-label="wifObject canvas preview" />;
+    return <canvas ref={canvasRef} aria-label="wifObject canvas preview" />;
 }

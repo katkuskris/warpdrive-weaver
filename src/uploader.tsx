@@ -104,20 +104,25 @@ function Uploader({ onOutputChange }: UploaderProps) {
           style={{ display: "none" }}
           onChange={handleFileChange}
         />
+        {output && (
+          <pre
+            style={{
+              whiteSpace: "pre-wrap",
+              wordWrap: "break-word",
+              maxHeight: "300px",
+              overflowY: "auto",
+              marginTop: "1em",
+              background: "#242424",
+              padding: "1em",
+              borderRadius: "4px",
+              border: "1px solid #eee",
+            }}
+          >
+            {output}
+          </pre>
+        )}
       </div>
       {error && <div style={{ color: "red", marginTop: "1em" }}>{error}</div>}
-      {output && (
-        <pre
-          style={{
-            background: "#000",
-            padding: "1em",
-            borderRadius: "4px",
-            marginTop: error ? "1em" : undefined,
-          }}
-        >
-          {output}
-        </pre>
-      )}
     </>
   );
 }
